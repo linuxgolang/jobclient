@@ -17,25 +17,29 @@ const (
  * 服务器A返回的数据
  * 或者服务器B经过服务器A转发回来的数据
  */
-func readSomething(conn *net.Conn) []byte {
-	buffer := make([]byte, 512)
+func readSomething(conn *net.Conn,more bool) []byte {
+	buffer := make([]byte, 12)
 	for{
 		_, err := (*conn).Read(buffer)
-		if err != nil{
+		if isErrAPrint(err){
 			//连接出现问题或服务器关闭连接,退出.
 			panic(fmt.Sprintf("Read error: %s", err))
 		}
 		//这里处理服务器返回的服务数据
-		fmt.Println(buffer)
+		fmt.Println(string(buffer))
+
+		if !more {return nil}
 	}
 }
 
-func writeSomething(conn *net.Conn, data []byte) {
+func writeSomething(conn *net.Conn, data []byte) bool {
 	_, err := (*conn).Write(data)
 	if isErrAPrint(err) {
 		//连接出现问题,退出.
-		panic(fmt.Sprintf("Write error: %s", err))
+		//panic(fmt.Sprintf("Write error: %s", err))
+		return false
 	}
+	return true
 }
 
 func isErrAPrint(err error) bool {

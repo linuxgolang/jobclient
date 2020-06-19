@@ -27,7 +27,7 @@ func (client *Client)Run()  {
 			break
 		}
 
-		if i == 20 {
+		if i == 19 {
 			fmt.Println("20次登陆失败,不再登陆.")
 			os.Exit(1)
 		}
@@ -55,21 +55,24 @@ func (client *Client)login(conn *net.Conn) bool {
 	buffer.Write(ck)
 
 	data := buffer.Bytes()
+	writeSomething(conn,data)
 	isLogin := true
 	defer func() {
 		if err:=recover();err!=nil{
 			isLogin = false
 		}
 	}()
-	writeSomething(conn,data)
-	if isLogin {readSomething(conn)}//如果这个函数没有panic,就说明登陆成功了,登陆失败服务器会关闭连接,报panic.
+	readSomething(conn,false)
+	fmt.Println("ccccccc")
 	return isLogin
 }
 
 func (client *Client)todoSomething(conn *net.Conn)  {
-	go readSomething(conn)
-	for{
-		writeSomething(conn,[]byte("abc"))
-		time.Sleep(time.Second)
-	}
+	go func() {
+		for{
+			if !writeSomething(conn,[]byte("abc")) {return}
+			time.Sleep(time.Second)
+		}
+	}()
+	readSomething(conn,true)
 }
